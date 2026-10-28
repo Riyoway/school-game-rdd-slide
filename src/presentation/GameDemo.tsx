@@ -1,7 +1,7 @@
 import { Img } from 'remotion'
 import { Cross, Heart } from 'lucide-react'
 import type { CSSProperties, ReactElement } from 'react'
-import { clamp, firstAttack, lerp, sampleBoss } from './demo-model'
+import { clamp, lerp, sampleBoss } from './demo-model'
 
 export type DemoMode = 'combat' | 'enemies' | 'progression' | 'recovery' | 'boss'
 const asset = (name: string) => `/assets/sprites/${name}.png`
@@ -75,18 +75,18 @@ function Progression({ frame }: { frame: number }) {
   const f = frame % 360
   const progress = f / 360
   const playerX = 320 + Math.sin(f / 27) * 54
-  const waveA = 1 - smooth((f - 96) / 28)
-  const waveB = smooth((f - 88) / 28) * (1 - smooth((f - 214) / 28))
-  const waveC = smooth((f - 206) / 28)
+  const waveA = Math.min(1, 1 - smooth((f - 92) / 30) + smooth((f - 326) / 30))
+  const waveB = smooth((f - 82) / 30) * (1 - smooth((f - 210) / 30))
+  const waveC = smooth((f - 200) / 30) * (1 - smooth((f - 326) / 30))
   return <>
-    <Field frame={f} speed={1.55} />
+    <Field frame={f} speed={1.6} />
     <Sprite name="player" x={playerX} y={392} size={84} />
     <div style={{ opacity: waveA }}><Sprite name="enemy-straight" x={225} y={128 + Math.sin(f / 20) * 12} size={78} /><Sprite name="enemy-straight" x={415} y={88 + Math.cos(f / 23) * 10} size={78} /></div>
     <div style={{ opacity: waveB }}><Sprite name="enemy-fast" x={205 + Math.sin(f / 17) * 30} y={118} size={76} /><Sprite name="enemy-move" x={430 + Math.sin(f / 19) * 55} y={160} size={80} /></div>
     <div style={{ opacity: waveC }}><Sprite name="enemy-spread" x={190} y={112} size={82} /><Sprite name="enemy-fast" x={330} y={145} size={74} /><Sprite name="enemy-move" x={470 + Math.sin(f / 16) * 35} y={92} size={78} /></div>
     {[0, 1].map(i => <Shot key={i} color="player" x={playerX + (i ? 10 : -10)} y={350 - ((f + i * 17) % 66) * 4.4} scale={.86} />)}
-    <Hud hp={3} progress={progress} tag={f < 112 ? 'EARLY' : f < 232 ? 'MID' : 'LATE'} />
-    {f > 320 && <div className="boss-approach" style={{ opacity: smooth((f - 320) / 24) }}>BOSS APPROACHING</div>}
+    <Hud hp={3} progress={progress} />
+    {f > 300 && <div className="boss-approach" style={{ opacity: smooth((f - 300) / 18) * (1 - smooth((f - 336) / 18)) }}>BOSS APPROACHING</div>}
   </>
 }
 
@@ -117,15 +117,17 @@ export function BossDemo({ frame }: { frame: number }) {
   const f = frame % 360
   const rewinding = state.phase === 1
   const adapt = state.phase === 2
+  const adaptP = adapt ? smooth((f - 180) / 20) : 0
+  const rewindP = rewinding ? Math.sin(((f - 120) / 60) * Math.PI) : 0
   const phaseTag = ['SNAPSHOT', 'ROLLBACK', 'RE-SIMULATION'][state.phase]
   return <>
-    <Field frame={rewinding ? 360 - f : f} speed={rewinding ? .8 : .55} />
+    <Field frame={rewinding ? 360 - f : f} speed={8 / 15} />
     <Sprite name="boss-sprite" x={320} y={132} size={152} />
     <div className="boss-health"><span>BOSS</span><i /></div>
-    {rewinding && [0, 1, 2, 3, 4].map(i => <Sprite key={i} name="player" x={firstAttack(clamp(119 - i * 18, 0, 119)).playerX} y={392} size={82} opacity={.05 + i * .035} />)}
-    {adapt && <><svg className="game-svg" viewBox="0 0 640 480"><path d="M320 205 L490 392" stroke="#ff8d83" strokeWidth="1.5" strokeDasharray="4 7" opacity=".32" /></svg><div className="target-mark" style={{ left: 490, top: 392 }} /></>}
-    <Shot x={state.bulletX} y={state.bulletY} color={rewinding ? 'rewind' : 'enemy'} angle={adapt ? -34 : 0} scale={.92} />
+    {adapt && <><svg className="game-svg" viewBox="0 0 640 480" style={{ opacity: adaptP }}><path d="M320 205 L490 392" stroke="#ff8d83" strokeWidth="1.5" strokeDasharray="4 7" opacity=".32" /></svg><div className="target-mark" style={{ left: 490, top: 392, opacity: adaptP }} /></>}
+    <Shot x={state.bulletX} y={state.bulletY} color={rewinding ? 'rewind' : 'enemy'} angle={-34 * adaptP} scale={.92} />
     <Sprite name="player" x={state.playerX} y={392} size={86} opacity={state.hit && Math.floor(f / 4) % 2 ? .28 : 1} />
+    {rewinding && <div className="rewind-screen" style={{ opacity: rewindP }} />}
     <Hud hp={state.hit ? 2 : 3} tag={phaseTag} />
     <div className={`time-strip ${rewinding ? 'is-rewinding' : ''}`}><i style={{ width: `${clamp(state.time / 4) * 100}%` }} /></div>
   </>

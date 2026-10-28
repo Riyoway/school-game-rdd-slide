@@ -356,3 +356,5 @@
 .time-strip i { display: block; height: 100%; background: #aeb9c8; }
 .time-strip.is-rewinding i { background: #b8a5ea; }
 .demo-figure figcaption, .demo-shell figcaption { margin: 8px 2px 0; color: #777; font: 500 11px/1.4 'Geist Variable','Noto Sans JP Variable',sans-serif; }
+
+.rewind-screen { position: absolute; inset: 0; z-index: 7; pointer-events: none; background: repeating-linear-gradient(180deg, rgba(190,171,235,.045) 0 2px, transparent 2px 6px), linear-gradient(90deg, rgba(112,84,178,.10), transparent 28%, transparent 72%, rgba(112,84,178,.10)); mix-blend-mode: screen; }
