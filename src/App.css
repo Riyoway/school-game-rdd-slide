@@ -1,0 +1,17 @@
+.setup-placeholder {
+  display: grid;
+  min-height: 100%;
+  place-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.setup-placeholder p,
+.setup-placeholder small {
+  margin: 0;
+}
+
+.setup-placeholder small {
+  color: #777;
+}
