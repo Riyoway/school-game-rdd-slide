@@ -176,7 +176,6 @@
 .demo-shell figcaption { margin: 10px 4px 1px; font-size: 14px; color: #8995a6; }
 
 .point-flow { position: relative; gap: 10px; margin: 4px 0 20px; padding: 0; }
-.point-flow:before { content: ''; position: absolute; left: 54px; right: 54px; top: 50%; height: 1px; background: #dbe4f1; z-index: 0; }
 .point-flow > div { position: relative; z-index: 1; min-height: 54px; padding: 0 14px; border: 1px solid #dfe7f1; border-radius: 14px; background: #fff; box-shadow: 0 6px 18px rgba(39,62,96,.045); font-size: 18px; }
 .point-flow > div svg { width: 22px; height: 22px; }
 .point-flow > svg { position: relative; z-index: 2; color: #9fb0c8; }
