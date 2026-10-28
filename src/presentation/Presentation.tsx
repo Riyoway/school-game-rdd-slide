@@ -82,11 +82,11 @@ export default function Presentation() {
 
   return <main className="presentation-app presentation-lux" ref={rootRef}>
     <div className="ambient ambient-a" /><div className="ambient ambient-b" />
-    <header className="presentation-topbar glass-bar">
+    {!fullscreen && <header className="presentation-topbar glass-bar">
       <span><PresentationIcon size={18} />2Dシューティングゲーム</span>
       <Badge variant="secondary">要求定義</Badge>
       <span className="presentation-duration">発表目安 {Math.floor(TOTAL_SECONDS / 60)}分{TOTAL_SECONDS % 60}秒</span>
-    </header>
+    </header>}
 
     <div className="presentation-workspace">
       <div className="presentation-stage-shell">
