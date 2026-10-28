@@ -4,10 +4,13 @@
 
 実装前に以下を確認してください。
 
+- `REQUIREMENTS.md` ← 要件定義の正本
 - `PROJECT_NOTES.md`
 - `README.md`
 - `package.json`
 - `src/` 配下の既存コード
+
+ゲーム要件・公開要件・ソース運用要件について矛盾がある場合は、`REQUIREMENTS.md` を優先してください。
 
 既存の React + Vite + TypeScript + Remotion の土台を利用し、不要な依存関係や別フレームワークへの置き換えは行わないでください。
 
@@ -94,23 +97,33 @@
 
 ## 開発・公開条件
 
+詳細は `REQUIREMENTS.md` を正本とします。プレゼンでは必要以上に細かく説明せず、公開できるWebゲームであることが伝われば十分です。
+
 - Webブラウザで動作するWebアプリ
 - PCでのプレイを主な対象とする
 - Chrome / Edge等の一般的なモダンブラウザに対応
 - ユーザー登録・ログイン不要
-- ゲーム本体は基本的にクライアント側で動作
+- **CSR（Client Side Rendering）を基本構成とする**
+- ゲーム本体の主要処理はブラウザ側で完結させる
+- 静的ホスティング可能な構成を基本とする
+- 24時間アクセス可能な公開を想定し、開発者PCや自宅サーバーの常時起動へ依存しない
+- Cloudflare Pages / Vercel / Netlify / GitHub Pages等のマネージドな静的ホスティングを推奨
+- 公開URLからログインなしでプレイできる状態にする
+
+### ソースコード運用
+
 - ソースコードはGitHubのPublic Repositoryで管理
 - 個人Repository / Organizationどちらでも可
 - 開発メンバー全員がGitHub上でContributorとして確認できること
+- 開発過程がコミット履歴から確認できること
 - 本プロジェクトのソースコードはMIT License
 - READMEにゲーム概要、操作方法、実行方法または開発環境、外部ライブラリ・ライセンス、公開URLを記載
-- Cloudflare Workers & Pagesで公開
-- 公開URLから第三者がプレイできる状態にする
+- APIキー、パスワード、トークン、個人情報等をPublic Repositoryへ含めない
 
 ## AI利用時の注意
 
 - AI支援ツールやCoding Agentの使用は可
-- APIキー、パスワード、個人情報などの機密情報をAIに入力しない
+- APIキー、パスワード、アクセストークン、個人情報などの機密情報をAIに入力しない
 - AIが提示した外部OSS、コード、素材を使用する場合はライセンス・利用条件を確認する
 
 ## 実装班が自由に決定できる内容
@@ -137,7 +150,7 @@
 3. 画面が上へ進み続け、進行位置に応じて敵構成が変わること
 4. 回復と敗北時の処理
 5. 最終ボスの Snapshot → State Rollback → Re-simulation
-6. Web / GitHub / Cloudflare / AI利用条件
+6. Web公開 / GitHub / AI利用時の注意
 7. 必須要件と実装班に任せる部分
 
 ## デザイン
@@ -165,8 +178,10 @@
 - プレゼン実装は `src/presentation/` 配下にまとめる
 - 既存の React + Vite + TypeScript + Remotion 環境を利用する
 - 不要なパッケージを追加しない
-- Cloudflare Pagesの静的デプロイで動作する構成を維持する
+- プレゼンサイト自体はCloudflare Pagesの静的デプロイで動作する構成を維持する
 - 公開先は `https://slide.temp.riyo.me`
+- 要件定義書ビューは `/requirements`
+- 発表メモは `/notes`
 
 ## 完了条件
 
