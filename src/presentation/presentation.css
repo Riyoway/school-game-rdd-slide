@@ -325,3 +325,34 @@
 }
 .spec-slide { background: #fff; }
 .spec-slide:before { display: none; }
+
+/* Game demo v2 — actual vertical-scrolling playfield, minimal HUD */
+.game-demo { position: relative; width: 640px; height: 480px; overflow: hidden; border: 0; border-radius: 7px; background: #0b1018; color: #eef2f7; box-shadow: none; isolation: isolate; }
+.demo-action { position: absolute; inset: 0; }
+.game-sprite { will-change: left, top, opacity, transform; image-rendering: auto; }
+.world-lines { position: absolute; inset: -48px 0 0; height: 576px; opacity: .68; background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, transparent 0 18%, rgba(143,161,186,.055) 18% 18.2%, transparent 18.2% 50%, rgba(143,161,186,.055) 50% 50.2%, transparent 50.2% 82%, rgba(143,161,186,.055) 82% 82.2%, transparent 82.2%); background-size: 100% 48px, 100% 100%; will-change: transform; }
+.world-marker { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #d7e3f2; box-shadow: 0 0 7px rgba(191,216,244,.35); }
+.game-hud { position: absolute; z-index: 10; top: 14px; left: 16px; right: 16px; height: 28px; display: flex; align-items: center; gap: 12px; font: 600 11px/1 'Geist Mono','Geist Variable',monospace; letter-spacing: .06em; color: #cbd5e1; }
+.demo-health { position: static; display: flex; align-items: center; gap: 5px; color: #f0a29a; }
+.demo-health span { color: #8897aa; margin-right: 3px; font-size: 10px; letter-spacing: .1em; }
+.hud-tag { margin-left: auto; color: #9aa8ba; font-size: 10px; letter-spacing: .12em; }
+.hud-progress { width: 118px; height: 2px; overflow: hidden; background: rgba(255,255,255,.11); }
+.hud-progress i { display: block; height: 100%; background: #d7e0eb; transition: none; }
+.game-bullet { width: 5px; height: 13px; border-radius: 999px; background: #ff8e83; box-shadow: 0 0 5px rgba(255,142,131,.28); }
+.game-bullet.bullet-player { width: 4px; height: 15px; background: #8fd8f5; box-shadow: 0 0 5px rgba(143,216,245,.25); }
+.game-bullet.bullet-rewind { background: #bda9ef; box-shadow: 0 0 6px rgba(189,169,239,.3); }
+.enemy-glow { width: 96px; height: 96px; border: 1px solid rgba(109,220,174,.48); background: rgba(109,220,174,.08); box-shadow: 0 0 24px rgba(109,220,174,.12); }
+.pickup-health { width: 28px; height: 28px; border-radius: 7px; color: #a9efd0; background: #173a31; border-color: #4a9f80; box-shadow: 0 0 12px rgba(74,159,128,.12); }
+.heal-pulse { position: absolute; z-index: 5; width: 54px; height: 54px; border: 1px solid #6ed8ad; border-radius: 50%; }
+.defeat-screen { position: absolute; inset: 0; z-index: 20; display: grid; place-content: center; gap: 8px; text-align: center; background: rgba(7,10,15,.82); backdrop-filter: blur(2px); pointer-events: none; }
+.defeat-screen strong { font: 650 28px/1 'Geist Mono','Geist Variable',monospace; letter-spacing: .08em; }
+.defeat-screen span { color: #95a3b4; font: 500 10px/1.2 'Geist Mono','Geist Variable',monospace; letter-spacing: .14em; }
+.restart-flash { position: absolute; inset: 0; z-index: 19; background: #fff; pointer-events: none; }
+.boss-approach { position: absolute; z-index: 8; left: 50%; top: 56px; transform: translateX(-50%); color: #d6dde7; font: 600 10px/1 'Geist Mono','Geist Variable',monospace; letter-spacing: .16em; }
+.boss-health { position: absolute; z-index: 9; left: 50%; top: 50px; width: 160px; transform: translateX(-50%); color: #8f9cad; font: 600 9px/1 'Geist Mono','Geist Variable',monospace; text-align: center; letter-spacing: .12em; }
+.boss-health i { display: block; height: 2px; margin-top: 6px; background: #a28fd2; border-radius: 0; }
+.target-mark { width: 58px; height: 58px; border-color: rgba(255,142,131,.48); }
+.time-strip { position: absolute; z-index: 9; left: 210px; right: 210px; bottom: 18px; height: 2px; background: rgba(255,255,255,.1); }
+.time-strip i { display: block; height: 100%; background: #aeb9c8; }
+.time-strip.is-rewinding i { background: #b8a5ea; }
+.demo-figure figcaption, .demo-shell figcaption { margin: 8px 2px 0; color: #777; font: 500 11px/1.4 'Geist Variable','Noto Sans JP Variable',sans-serif; }

@@ -1,104 +1,114 @@
 import { Img } from 'remotion'
-import { Cross, Heart, History, MoveRight, RotateCcw, Sparkles } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { Cross, Heart } from 'lucide-react'
+import type { CSSProperties, ReactElement } from 'react'
 import { clamp, firstAttack, lerp, sampleBoss } from './demo-model'
 
 export type DemoMode = 'combat' | 'enemies' | 'progression' | 'recovery' | 'boss'
 const asset = (name: string) => `/assets/sprites/${name}.png`
+const smooth = (t: number) => { const x = clamp(t); return x * x * (3 - 2 * x) }
 
-function Sprite({ name, x, y, size = 100, style }: { name: string; x: number; y: number; size?: number; style?: CSSProperties }) {
-  return <Img className="game-sprite" src={asset(name)} style={{ width: size, height: size, left: x - size / 2, top: y - size / 2, transform: name === 'enemy-fast' ? 'rotate(180deg)' : undefined, ...style }} />
+function Sprite({ name, x, y, size = 88, opacity = 1, style }: { name: string; x: number; y: number; size?: number; opacity?: number; style?: CSSProperties }) {
+  return <Img className="game-sprite" src={asset(name)} style={{ width: size, height: size, left: x - size / 2, top: y - size / 2, opacity, transform: name === 'enemy-fast' ? 'rotate(180deg)' : undefined, ...style }} />
 }
-function Shot({ x, y, color = 'enemy', angle = 0 }: { x: number; y: number; color?: string; angle?: number }) {
-  return <i className={`game-bullet bullet-${color}`} style={{ left: x, top: y, transform: `translate(-50%,-50%) rotate(${angle}deg)` }} />
+function Shot({ x, y, color = 'enemy', angle = 0, scale = 1 }: { x: number; y: number; color?: string; angle?: number; scale?: number }) {
+  return <i className={`game-bullet bullet-${color}`} style={{ left: x, top: y, transform: `translate(-50%,-50%) rotate(${angle}deg) scale(${scale})` }} />
 }
 function Health({ value }: { value: number }) {
-  return <div className="demo-health"><span>HP</span>{[1, 2, 3].map((i) => <Heart key={i} size={19} fill={i <= value ? 'currentColor' : 'none'} opacity={i <= value ? 1 : .25} />)}</div>
+  return <div className="demo-health"><span>HP</span>{[1, 2, 3].map(i => <Heart key={i} size={15} strokeWidth={1.8} fill={i <= value ? 'currentColor' : 'none'} opacity={i <= value ? 1 : .22} />)}</div>
 }
-function Pickup({ x, y }: { x: number; y: number }) {
-  return <div className="pickup pickup-health" style={{ left: x, top: y }}><Cross size={18} /></div>
+function Field({ frame, speed = 1 }: { frame: number; speed?: number }) {
+  const offset = (frame * speed) % 48
+  const markers = [52, 164, 278, 392, 516]
+  return <>
+    <div className="world-lines" style={{ transform: `translateY(${offset}px)` }} />
+    {markers.map((x, i) => {
+      const y = ((i * 97 + frame * speed * 1.6) % 520) - 24
+      return <i key={x} className="world-marker" style={{ left: x, top: y, opacity: .18 + (i % 3) * .07 }} />
+    })}
+  </>
 }
-function Blast({ x, y, progress }: { x: number; y: number; progress: number }) {
-  return <div className="game-blast" style={{ left: x, top: y, opacity: 1 - progress, transform: `translate(-50%,-50%) scale(${.7 + progress * 1.8})` }} />
+function Hud({ hp = 3, progress, tag }: { hp?: number; progress?: number; tag?: string }) {
+  return <div className="game-hud"><Health value={hp} />{tag && <span className="hud-tag">{tag}</span>}{progress !== undefined && <div className="hud-progress"><i style={{ width: `${progress * 100}%` }} /></div>}</div>
 }
 
 function Combat({ frame }: { frame: number }) {
   const f = frame % 360
-  const playerX = 320 + Math.sin(f / 35) * 62
+  const playerX = 320 + Math.sin(f / 30) * 70
+  const enemyY = 92 + ((f * 1.05) % 90)
   return <>
-    <Sprite name="player" x={playerX} y={380} />
-    <Sprite name="enemy-straight" x={230} y={125 + Math.sin(f / 24) * 8} />
-    <Sprite name="enemy-spread" x={470} y={120 + Math.cos(f / 27) * 8} size={105} />
-    {[0, 1].map((i) => <Shot key={i} color="player" x={playerX + (i ? 12 : -12)} y={350 - ((f + i * 19) % 62) * 3.3} />)}
-    {[0, 1, 2].map((i) => <Shot key={i} x={470 + (i - 1) * ((f % 75) * .7)} y={165 + (f % 75) * 2.2} angle={(i - 1) * -22} />)}
-    <div className="demo-hud-bottom"><Health value={3} /></div>
-    <div className="demo-caption">開始から最終ボスまで連続して進行</div>
+    <Field frame={f} speed={1.2} />
+    <Sprite name="player" x={playerX} y={386} size={86} />
+    <Sprite name="enemy-straight" x={220 + Math.sin(f / 34) * 18} y={enemyY} size={82} />
+    <Sprite name="enemy-spread" x={454 + Math.cos(f / 38) * 25} y={112 + ((f * .74) % 58)} size={86} />
+    {[0, 1].map(i => <Shot key={i} color="player" x={playerX + (i ? 10 : -10)} y={350 - ((f + i * 18) % 70) * 4.4} scale={.88} />)}
+    {[-1, 0, 1].map((spread, i) => { const age = (f + i * 7) % 90; return <Shot key={spread} x={454 + spread * age * .55} y={160 + age * 2.45} angle={spread * -18} scale={.9} /> })}
+    <Hud hp={3} progress={(f % 360) / 360} />
   </>
 }
 
 const enemyExamples = [
-  { name: 'enemy-straight', label: '直進弾', sub: '一定方向に発射' },
-  { name: 'enemy-spread', label: '拡散弾', sub: '複数の弾を同時発射' },
-  { name: 'enemy-fast', label: '高速弾', sub: '弾速に違いをつける' },
-  { name: 'enemy-move', label: '移動型', sub: '横移動しながら発射' },
-]
+  { name: 'enemy-straight', x: 130, phase: 0 },
+  { name: 'enemy-spread', x: 265, phase: 22 },
+  { name: 'enemy-fast', x: 400, phase: 44 },
+  { name: 'enemy-move', x: 515, phase: 66 },
+] as const
 function Enemies({ frame }: { frame: number }) {
-  return <>{enemyExamples.map((enemy, index) => {
-    const column = index % 2
-    const row = Math.floor(index / 2)
-    const origin = column * 320
-    const top = 45 + row * 188
-    const x = origin + 155 + (index === 3 ? Math.sin(frame / 22) * 57 : 0)
-    const age = (frame * (index === 2 ? 2 : 1)) % 64
-    return <div key={enemy.name}>
-      <div className="enemy-demo-label" style={{ left: origin + 26, top: top + 8 }}>{enemy.label}<small>{enemy.sub}</small></div>
-      <Sprite name={enemy.name} x={x} y={top + 91} size={94} />
-      {(index === 1 ? [-1, 0, 1] : [0]).map((spread) => <Shot key={spread} x={x + spread * age * .75} y={top + 117 + age * 1.1} angle={spread * -25} />)}
-    </div>
-  })}<div className="enemy-demo-divider vertical" /><div className="enemy-demo-divider horizontal" /><div className="demo-caption">通常敵は4種類以上。攻撃方法・動きに違いをつける。</div></>
+  const f = frame % 360
+  return <>
+    <Field frame={f} speed={.9} />
+    {enemyExamples.map((enemy, index) => {
+      const cycle = (f + enemy.phase) % 180
+      const y = 55 + cycle * 1.55
+      const x = enemy.x + (index === 3 ? Math.sin(f / 18) * 38 : 0)
+      const alpha = Math.min(1, cycle / 18, (180 - cycle) / 20)
+      return <div key={enemy.name} style={{ opacity: alpha }}>
+        <Sprite name={enemy.name} x={x} y={y} size={78} />
+        {index === 1 ? [-1, 0, 1].map(s => <Shot key={s} x={x + s * 24} y={y + 45} angle={s * -22} scale={.82} />) : <Shot x={x} y={y + 48} scale={index === 2 ? .72 : .88} />}
+      </div>
+    })}
+    <Sprite name="player" x={320 + Math.sin(f / 26) * 42} y={392} size={82} />
+    <Hud hp={3} tag="4 ENEMY TYPES" />
+  </>
 }
 
 function Progression({ frame }: { frame: number }) {
   const f = frame % 360
-  const phase = f < 120 ? 0 : f < 240 ? 1 : 2
-  const configs = [
-    ['enemy-straight', 'enemy-spread'],
-    ['enemy-fast', 'enemy-move'],
-    ['enemy-spread', 'enemy-fast', 'enemy-move'],
-  ] as const
-  const names = configs[phase]
-  const playerX = 320 + Math.sin(f / 28) * 45
+  const progress = f / 360
+  const playerX = 320 + Math.sin(f / 27) * 54
+  const waveA = 1 - smooth((f - 96) / 28)
+  const waveB = smooth((f - 88) / 28) * (1 - smooth((f - 214) / 28))
+  const waveC = smooth((f - 206) / 28)
   return <>
-    <Sprite name="player" x={playerX} y={380} />
-    {names.map((name, i) => <Sprite key={name} name={name} x={170 + i * (300 / Math.max(1, names.length - 1))} y={120 + (i % 2) * 35} size={92} />)}
-    {[0, 1].map(i => <Shot key={i} color="player" x={playerX + (i ? 12 : -12)} y={345 - ((f + i * 18) % 58) * 3.4} />)}
-    <div className="stage-toast"><span>区間 {phase + 1}</span> / 敵構成が変化</div>
-    <div className="demo-hud-bottom"><Health value={3} /><span>連続進行</span></div>
-    <div className="demo-caption">区切りごとに敵の種類・組み合わせ・数を切り替える</div>
+    <Field frame={f} speed={1.55} />
+    <Sprite name="player" x={playerX} y={392} size={84} />
+    <div style={{ opacity: waveA }}><Sprite name="enemy-straight" x={225} y={128 + Math.sin(f / 20) * 12} size={78} /><Sprite name="enemy-straight" x={415} y={88 + Math.cos(f / 23) * 10} size={78} /></div>
+    <div style={{ opacity: waveB }}><Sprite name="enemy-fast" x={205 + Math.sin(f / 17) * 30} y={118} size={76} /><Sprite name="enemy-move" x={430 + Math.sin(f / 19) * 55} y={160} size={80} /></div>
+    <div style={{ opacity: waveC }}><Sprite name="enemy-spread" x={190} y={112} size={82} /><Sprite name="enemy-fast" x={330} y={145} size={74} /><Sprite name="enemy-move" x={470 + Math.sin(f / 16) * 35} y={92} size={78} /></div>
+    {[0, 1].map(i => <Shot key={i} color="player" x={playerX + (i ? 10 : -10)} y={350 - ((f + i * 17) % 66) * 4.4} scale={.86} />)}
+    <Hud hp={3} progress={progress} tag={f < 112 ? 'EARLY' : f < 232 ? 'MID' : 'LATE'} />
+    {f > 320 && <div className="boss-approach" style={{ opacity: smooth((f - 320) / 24) }}>BOSS APPROACHING</div>}
   </>
 }
 
 function Recovery({ frame }: { frame: number }) {
   const f = frame % 360
-  const killed = f >= 80
-  const collected = f >= 163
-  const defeat = f >= 222 && f < 270
-  const retry = f >= 270
-  const playerY = retry ? 375 : lerp(385, 324, (f - 125) / 38)
-  const hp = retry ? 3 : defeat ? 0 : f >= 205 ? 1 : collected ? 2 : 1
+  const killed = f >= 92
+  const collected = f >= 176
+  const defeatP = smooth((f - 230) / 18) * (1 - smooth((f - 274) / 16))
+  const retry = f >= 274
+  const playerY = retry ? 392 : lerp(392, 332, smooth((f - 132) / 46))
+  const hp = retry ? 3 : defeatP > .55 ? 0 : f >= 216 ? 1 : collected ? 2 : 1
   return <>
-    {!killed && <><div className="enemy-glow" style={{ left: 320, top: 125, opacity: .7 + Math.sin(f / 7) * .3 }} /><Sprite name="enemy-move" x={320} y={125} /></>}
-    {!defeat && <Sprite name="player" x={320} y={playerY} style={{ opacity: f >= 202 && f < 222 ? (Math.floor(f / 3) % 2 ? .2 : 1) : 1 }} />}
-    {!killed && <Shot color="player" x={320} y={340 - (f % 55) * 4} />}
-    {f >= 80 && f < 102 && <Blast x={320} y={125} progress={(f - 80) / 22} />}
-    {killed && !collected && <Pickup x={320} y={lerp(140, 324, (f - 80) / 83)} />}
-    {collected && f < 194 && <div className="floating-message health-message" style={{ left: 320, top: 260 }}>HP 回復</div>}
-    {f >= 195 && f < 205 && <Shot x={320} y={lerp(150, playerY, (f - 195) / 10)} />}
-    {f >= 213 && f < 222 && <Shot x={320} y={lerp(150, playerY, (f - 213) / 9)} />}
-    {defeat && <div className="game-overlay"><div className="retry-popup"><RotateCcw size={32} /><h4>HP が 0 → 敗北</h4><p>ゲームの最初から再挑戦</p></div></div>}
-    {retry && <div className="stage-toast"><RotateCcw size={20} />HP を全回復して最初から</div>}
-    <div className="demo-hud-bottom"><Health value={hp} /></div>
-    <div className="demo-caption">{retry ? '途中の区切りはチェックポイントではない' : defeat ? '敗北すると最初から再挑戦' : collected ? '回復アイテムを回収すると HP 回復' : killed ? '特殊状態の敵から回復アイテムをドロップ' : '一定のタイミング以降、一部の敵がランダムに発光'}</div>
+    <Field frame={f} speed={1.1} />
+    {!killed && <><div className="enemy-glow" style={{ left: 320, top: 132, opacity: .45 + Math.sin(f / 9) * .18 }} /><Sprite name="enemy-move" x={320 + Math.sin(f / 18) * 24} y={132} size={82} /></>}
+    <Sprite name="player" x={320} y={playerY} size={84} opacity={defeatP > .7 ? 0 : 1} style={{ filter: f >= 212 && f < 230 && Math.floor(f / 3) % 2 ? 'brightness(2)' : undefined }} />
+    {!killed && <Shot color="player" x={320} y={354 - (f % 64) * 4.2} scale={.88} />}
+    {killed && !collected && <div className="pickup pickup-health" style={{ left: 320, top: lerp(140, 326, smooth((f - 92) / 84)) }}><Cross size={17} /></div>}
+    {collected && f < 205 && <div className="heal-pulse" style={{ left: 320, top: playerY, opacity: 1 - smooth((f - 176) / 29), transform: `translate(-50%,-50%) scale(${.6 + smooth((f - 176) / 29) * 1.7})` }} />}
+    {f >= 210 && f < 230 && <Shot x={320} y={lerp(145, playerY, smooth((f - 210) / 20))} />}
+    <div className="defeat-screen" style={{ opacity: defeatP }}><strong>DEFEAT</strong><span>RESTART FROM START</span></div>
+    {retry && <div className="restart-flash" style={{ opacity: 1 - smooth((f - 274) / 24) }} />}
+    <Hud hp={hp} tag={retry ? 'RESTART' : collected ? 'RECOVERED' : 'RUN'} />
   </>
 }
 
@@ -107,32 +117,28 @@ export function BossDemo({ frame }: { frame: number }) {
   const f = frame % 360
   const rewinding = state.phase === 1
   const adapt = state.phase === 2
+  const phaseTag = ['SNAPSHOT', 'ROLLBACK', 'RE-SIMULATION'][state.phase]
   return <>
-    <Sprite name="boss-sprite" x={320} y={136} size={172} />
-    <div className="boss-health"><span>最終ボス</span><i /></div>
-    {state.phase === 0 && <svg className="game-svg" viewBox="0 0 640 480"><path d="M320 390 H490" stroke="#7093b4" strokeWidth="2" strokeDasharray="5 6" opacity=".5" /></svg>}
-    {rewinding && [0, 1, 2, 3].map(i => <Sprite key={i} name="player" x={firstAttack(clamp(119 - i * 24, 0, 119)).playerX} y={390} size={90} style={{ opacity: .07 + i * .04 }} />)}
-    {adapt && <><svg className="game-svg" viewBox="0 0 640 480"><path d="M320 217 L490 390" stroke="#f1a194" strokeWidth="2" strokeDasharray="5 7" opacity=".45" /></svg><div className="target-mark" style={{ left: 490, top: 390 }} /></>}
-    <Shot x={state.bulletX} y={state.bulletY} color={rewinding ? 'rewind' : 'enemy'} angle={adapt ? -34 : 0} />
-    <Sprite name="player" x={state.playerX} y={390} size={95} style={{ opacity: state.hit && Math.floor(f / 4) % 2 ? .25 : 1 }} />
-    {state.phase === 0 && f > 65 && <div className="dodge-label"><MoveRight size={20} />右に回避</div>}
-    {rewinding && <div className="rewind-label"><History size={23} />巻き戻し中</div>}
-    {adapt && <div className="attack-label">前回の回避先を狙う</div>}
-    <div className="demo-hud-bottom"><Health value={state.hit ? 2 : 3} /><span className={rewinding ? 'rewind-clock' : ''}>{rewinding && <History size={17} />}{state.time.toFixed(1)} s</span></div>
-    <div className="demo-caption"><span className="phase-number">{state.phase + 1}</span>{['攻撃を記録 → プレイヤーが右へ回避', '位置・攻撃状態を数秒前まで戻す', '右方向を狙う攻撃に変えて再実行'][state.phase]}</div>
+    <Field frame={rewinding ? 360 - f : f} speed={rewinding ? .8 : .55} />
+    <Sprite name="boss-sprite" x={320} y={132} size={152} />
+    <div className="boss-health"><span>BOSS</span><i /></div>
+    {rewinding && [0, 1, 2, 3, 4].map(i => <Sprite key={i} name="player" x={firstAttack(clamp(119 - i * 18, 0, 119)).playerX} y={392} size={82} opacity={.05 + i * .035} />)}
+    {adapt && <><svg className="game-svg" viewBox="0 0 640 480"><path d="M320 205 L490 392" stroke="#ff8d83" strokeWidth="1.5" strokeDasharray="4 7" opacity=".32" /></svg><div className="target-mark" style={{ left: 490, top: 392 }} /></>}
+    <Shot x={state.bulletX} y={state.bulletY} color={rewinding ? 'rewind' : 'enemy'} angle={adapt ? -34 : 0} scale={.92} />
+    <Sprite name="player" x={state.playerX} y={392} size={86} opacity={state.hit && Math.floor(f / 4) % 2 ? .28 : 1} />
+    <Hud hp={state.hit ? 2 : 3} tag={phaseTag} />
+    <div className={`time-strip ${rewinding ? 'is-rewinding' : ''}`}><i style={{ width: `${clamp(state.time / 4) * 100}%` }} /></div>
   </>
 }
 
-const labels: Record<DemoMode, string> = { combat: '基本プレイ', enemies: '敵の攻撃パターン', progression: '進行と敵構成', recovery: '回復と再挑戦', boss: '巻き戻しボス' }
+const components: Record<DemoMode, (props: { frame: number }) => ReactElement> = { combat: Combat, enemies: Enemies, progression: Progression, recovery: Recovery, boss: BossDemo }
+const labels: Record<DemoMode, string> = { combat: '基本プレイ', enemies: '敵の違い', progression: '進行に応じた敵の変化', recovery: '回復と再挑戦', boss: '時間巻き戻しボス' }
 export function GameDemo({ mode, frame, reducedMotion = false }: { mode: DemoMode; frame: number; reducedMotion?: boolean }) {
   const f = reducedMotion ? 72 : frame % 360
-  return <div className={`game-demo demo-${mode}`} role="img" aria-label={`${labels[mode]}のループ動作例`}>
-    <div className="demo-grid" style={{ transform: `translateY(${reducedMotion ? 0 : f % 32}px)` }} />
-    <div className="demo-topline"><span><Sparkles size={16} />{labels[mode]}</span><span>{reducedMotion ? '静止表示' : 'ループ再生'}<RotateCcw size={14} /></span></div>
-    <div className="demo-action" style={{ opacity: Math.min(1, f / 8, (360 - f) / 8) }}>{mode === 'boss' ? <BossDemo frame={f} /> : mode === 'enemies' ? <Enemies frame={f} /> : mode === 'recovery' ? <Recovery frame={f} /> : mode === 'progression' ? <Progression frame={f} /> : <Combat frame={f} />}</div>
-  </div>
+  const Component = components[mode]
+  return <div className={`game-demo demo-${mode}`} role="img" aria-label={`${labels[mode]}の動作例`}><div className="demo-action"><Component frame={f} /></div></div>
 }
 
 export function DemoFigure({ mode, frame, reducedMotion }: { mode: DemoMode; frame: number; reducedMotion: boolean }) {
-  return <figure className="demo-figure"><div className="demo-viewport"><GameDemo mode={mode} frame={frame} reducedMotion={reducedMotion} /></div><figcaption>動作例。外観・数値・攻撃パターンは実装班が決定。</figcaption></figure>
+  return <figure className="demo-figure"><div className="demo-viewport"><GameDemo mode={mode} frame={frame} reducedMotion={reducedMotion} /></div><figcaption>{labels[mode]}の動作イメージ。外観・数値は確定仕様ではありません。</figcaption></figure>
 }
