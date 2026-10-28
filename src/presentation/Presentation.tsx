@@ -124,10 +124,10 @@ export default function Presentation() {
       <Dock
         items={dockItems}
         position="bottom"
-        theme="dark"
-        baseItemSize={46}
-        magnification={66}
-        panelHeight={62}
+        theme="light"
+        baseItemSize={42}
+        magnification={56}
+        panelHeight={56}
         gap={8}
         distance={150}
         roundness={0.62}
