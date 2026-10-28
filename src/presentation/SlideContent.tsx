@@ -1,5 +1,5 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
-import { ArrowRight, Check, CheckCheck, Code2, Cross, FileCode2, Gamepad2, Heart, Layers3, Monitor, RotateCcw, ShieldCheck, Sparkles, Swords, Target, Users } from 'lucide-react'
+import { ArrowRight, Check, CheckCheck, Code2, Cross, FileCode2, Gamepad2, Heart, Layers3, Monitor, RotateCcw, ShieldCheck, Sparkles, Swords, Target } from 'lucide-react'
 import { FaGithub } from 'react-icons/fa6'
 import { SiCloudflare, SiMarkdown } from 'react-icons/si'
 import SpotlightCard from '@/components/SpotlightCard'
@@ -43,7 +43,6 @@ export function SlideContent({ index, reducedMotion, frameOffset = 0, fixedFrame
     <div className="slide-content" style={{ opacity: entrance, transform: `translate3d(0, ${(1 - entrance) * 8}px, 0)` }}>
       {index === 0 ? <>
         <div className="intro-layout"><section className="intro-text"><div className="section-label">ゲームの概要</div><h1>2Dシューティング<br />ゲームの要求定義</h1><p className="intro-description">敵構成が変わる区間を連続して進み、<br />時間を巻き戻す最終ボスを倒す。</p><div className="facts"><Fact value="1" label="ステージ" delay={4} reducedMotion={reducedMotion} /><Fact value="4種類以上" label="通常敵" delay={8} reducedMotion={reducedMotion} /><Fact value="3" label="初期 HP" delay={12} reducedMotion={reducedMotion} /></div></section><div className="demo-shell"><DemoFigure mode="combat" frame={frame} reducedMotion={reducedMotion} /></div></div>
-        <div className="intro-bottom"><span><Users size={23} />他班が開発するための要求を説明</span><span>発表 約5分 / 質疑応答 3分</span></div>
       </> : <>
         <header className="slide-title"><div className="section-label">{['', 'ゲームの基本', '進行構成', '回復と再挑戦', '最終ボス', '開発と公開', 'まとめ'][index]}</div><h2>{slides[index].title}</h2></header>
         {index === 1 && <><div className="split-layout"><section className="spec-copy"><Rule icon={<Gamepad2 />} title="移動しながら敵を攻撃する" delay={4} reducedMotion={reducedMotion}>被弾で HP が減り、0 になると敗北。<br />被弾直後は短時間の無敵時間を設ける。</Rule><Rule icon={<Target />} title="通常敵は4種類以上" delay={8} reducedMotion={reducedMotion}>発射方向・弾数・弾速・発射間隔・移動方法などで違いをつける。</Rule><Rule icon={<Layers3 />} title="進行に合わせて難しくする" delay={12} reducedMotion={reducedMotion}>後半になるにつれて敵の数・耐久力・弾速などを調整する。</Rule></section><div className="demo-shell"><DemoFigure mode="enemies" frame={frame} reducedMotion={reducedMotion} /></div></div><div className="slide-callout"><Swords size={23} /><span>開始から最終ボスまで、1つのステージとして連続して進行する。</span></div></>}

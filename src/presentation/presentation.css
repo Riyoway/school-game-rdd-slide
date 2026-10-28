@@ -324,10 +324,4 @@
   background-size: 24px 24px;
 }
 .spec-slide { background: #fff; }
-.spec-slide:before {
-  display: block;
-  background-color: transparent;
-  background-image: linear-gradient(rgba(23,23,23,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(23,23,23,.055) 1px, transparent 1px);
-  background-size: 24px 24px;
-  opacity: 1;
-}
+.spec-slide:before { display: none; }
