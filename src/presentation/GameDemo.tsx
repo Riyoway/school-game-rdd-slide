@@ -1,5 +1,5 @@
 import { Img } from 'remotion'
-import { ArrowUp, Check, Coins, Cross, Heart, History, MoveRight, RotateCcw, Shield, Sparkles, Swords, Timer } from 'lucide-react'
+import { Cross, Heart, History, MoveRight, RotateCcw, Sparkles } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { clamp, firstAttack, lerp, sampleBoss } from './demo-model'
 
@@ -15,36 +15,24 @@ function Shot({ x, y, color = 'enemy', angle = 0 }: { x: number; y: number; colo
 function Health({ value }: { value: number }) {
   return <div className="demo-health"><span>HP</span>{[1, 2, 3].map((i) => <Heart key={i} size={19} fill={i <= value ? 'currentColor' : 'none'} opacity={i <= value ? 1 : .25} />)}</div>
 }
-function Pickup({ x, y, health = false }: { x: number; y: number; health?: boolean }) {
-  return <div className={`pickup ${health ? 'pickup-health' : ''}`} style={{ left: x, top: y }}>{health ? <Cross size={18} /> : <Coins size={19} />}</div>
+function Pickup({ x, y }: { x: number; y: number }) {
+  return <div className="pickup pickup-health" style={{ left: x, top: y }}><Cross size={18} /></div>
 }
 function Blast({ x, y, progress }: { x: number; y: number; progress: number }) {
   return <div className="game-blast" style={{ left: x, top: y, opacity: 1 - progress, transform: `translate(-50%,-50%) scale(${.7 + progress * 1.8})` }} />
 }
 
-function Combat({ frame, progression = false }: { frame: number; progression?: boolean }) {
+function Combat({ frame }: { frame: number }) {
   const f = frame % 360
-  const destroyed = f >= 96
-  const collected = f >= 184
-  const upgrade = progression && f >= 215 && f < 300
-  const nextStage = progression && f >= 300
-  const playerX = lerp(320, 280, (f - 130) / 50)
+  const playerX = 320 + Math.sin(f / 35) * 62
   return <>
-    <Sprite name="player" x={playerX} y={lerp(385, 340, (f - 140) / 40)} />
-    {!destroyed && <Sprite name="enemy-straight" x={280} y={130} />}
-    <Sprite name="enemy-spread" x={490} y={115 + Math.sin(f / 25) * 8} size={105} />
-    {!destroyed && [0, 1, 2].map((i) => <Shot key={i} color="player" x={lerp(320, 280, clamp(f / 80))} y={350 - ((f + i * 17) % 65) * 3.3} />)}
-    {[0, 1, 2].map((i) => <Shot key={i} x={490 + (i - 1) * ((f % 80) * .7)} y={160 + (f % 80) * 2.4} />)}
-    {f >= 96 && f < 118 && <Blast x={280} y={130} progress={(f - 96) / 22} />}
-    {destroyed && !collected && <Pickup x={280} y={lerp(145, 340, (f - 96) / 88)} />}
-    {progression && destroyed && !collected && <div className="pickup pickup-buff" style={{ left: 334, top: lerp(145, 340, (f - 96) / 88) }}><Shield size={18} /></div>}
-    {collected && f < 215 && <div className="floating-message" style={{ left: 280, top: 275 }}>ポイント +20</div>}
-    {upgrade && <div className="game-overlay"><div className="upgrade-popup"><Check size={30} /><h4>ステージクリア</h4><p>ポイントで武器を強化</p><div className="upgrade-choice"><Swords size={24} /><span>武器を強化</span><span>20 pt</span></div><small>所持ポイント　120 → 100</small></div></div>}
-    {progression && f < 45 && <div className="game-overlay"><div className="upgrade-popup"><Timer size={30} /><h4>ステージ開始</h4><p>ステージバフを選択</p><div className="upgrade-choice"><ArrowUp size={24} /><span>攻撃力上昇（例）</span><Check size={20} /></div><small>このステージ内のみ有効</small></div></div>}
-    {progression && f >= 45 && f < 215 && <div className="buff-indicator"><ArrowUp size={15} />ステージバフ{collected && <><Shield size={15} />永続バフ</>}</div>}
-    {nextStage && <><div className="stage-toast"><Shield size={20} />次のステージへ / 永続バフを維持</div>{[0, 1].map((i) => <Shot key={i} color="player" x={playerX + (i ? 13 : -13)} y={350 - ((f - 300) % 50) * 4} />)}</>}
-    <div className="demo-hud-bottom"><Health value={3} /><span><Coins size={17} /> {nextStage ? 100 : collected ? 120 : 100} pt</span></div>
-    <div className="demo-caption">{upgrade ? 'クリア後に強化フェーズへ移行' : nextStage ? '武器を強化して次のステージへ' : progression && f < 45 ? '開始時にステージバフを選ぶ' : collected ? '回収した時点でポイントを獲得' : destroyed ? '倒した敵からポイントが落ちる' : '移動しながら敵を攻撃'}</div>
+    <Sprite name="player" x={playerX} y={380} />
+    <Sprite name="enemy-straight" x={230} y={125 + Math.sin(f / 24) * 8} />
+    <Sprite name="enemy-spread" x={470} y={120 + Math.cos(f / 27) * 8} size={105} />
+    {[0, 1].map((i) => <Shot key={i} color="player" x={playerX + (i ? 12 : -12)} y={350 - ((f + i * 19) % 62) * 3.3} />)}
+    {[0, 1, 2].map((i) => <Shot key={i} x={470 + (i - 1) * ((f % 75) * .7)} y={165 + (f % 75) * 2.2} angle={(i - 1) * -22} />)}
+    <div className="demo-hud-bottom"><Health value={3} /></div>
+    <div className="demo-caption">開始から最終ボスまで連続して進行</div>
   </>
 }
 
@@ -67,7 +55,27 @@ function Enemies({ frame }: { frame: number }) {
       <Sprite name={enemy.name} x={x} y={top + 91} size={94} />
       {(index === 1 ? [-1, 0, 1] : [0]).map((spread) => <Shot key={spread} x={x + spread * age * .75} y={top + 117 + age * 1.1} angle={spread * -25} />)}
     </div>
-  })}<div className="enemy-demo-divider vertical" /><div className="enemy-demo-divider horizontal" /><div className="demo-caption">攻撃方法・動きの組み合わせ例</div></>
+  })}<div className="enemy-demo-divider vertical" /><div className="enemy-demo-divider horizontal" /><div className="demo-caption">通常敵は4種類以上。攻撃方法・動きに違いをつける。</div></>
+}
+
+function Progression({ frame }: { frame: number }) {
+  const f = frame % 360
+  const phase = f < 120 ? 0 : f < 240 ? 1 : 2
+  const configs = [
+    ['enemy-straight', 'enemy-spread'],
+    ['enemy-fast', 'enemy-move'],
+    ['enemy-spread', 'enemy-fast', 'enemy-move'],
+  ] as const
+  const names = configs[phase]
+  const playerX = 320 + Math.sin(f / 28) * 45
+  return <>
+    <Sprite name="player" x={playerX} y={380} />
+    {names.map((name, i) => <Sprite key={name} name={name} x={170 + i * (300 / Math.max(1, names.length - 1))} y={120 + (i % 2) * 35} size={92} />)}
+    {[0, 1].map(i => <Shot key={i} color="player" x={playerX + (i ? 12 : -12)} y={345 - ((f + i * 18) % 58) * 3.4} />)}
+    <div className="stage-toast"><span>区間 {phase + 1}</span> / 敵構成が変化</div>
+    <div className="demo-hud-bottom"><Health value={3} /><span>連続進行</span></div>
+    <div className="demo-caption">区切りごとに敵の種類・組み合わせ・数を切り替える</div>
+  </>
 }
 
 function Recovery({ frame }: { frame: number }) {
@@ -83,14 +91,14 @@ function Recovery({ frame }: { frame: number }) {
     {!defeat && <Sprite name="player" x={320} y={playerY} style={{ opacity: f >= 202 && f < 222 ? (Math.floor(f / 3) % 2 ? .2 : 1) : 1 }} />}
     {!killed && <Shot color="player" x={320} y={340 - (f % 55) * 4} />}
     {f >= 80 && f < 102 && <Blast x={320} y={125} progress={(f - 80) / 22} />}
-    {killed && !collected && <><Pickup health x={320} y={lerp(140, 324, (f - 80) / 83)} /><Pickup x={425} y={lerp(140, 280, (f - 80) / 83)} /></>}
+    {killed && !collected && <Pickup x={320} y={lerp(140, 324, (f - 80) / 83)} />}
     {collected && f < 194 && <div className="floating-message health-message" style={{ left: 320, top: 260 }}>HP 回復</div>}
     {f >= 195 && f < 205 && <Shot x={320} y={lerp(150, playerY, (f - 195) / 10)} />}
     {f >= 213 && f < 222 && <Shot x={320} y={lerp(150, playerY, (f - 213) / 9)} />}
-    {defeat && <div className="game-overlay"><div className="retry-popup"><RotateCcw size={32} /><h4>HP が 0 → 敗北</h4><p>同じステージから再挑戦</p></div></div>}
-    {retry && <div className="stage-toast"><RotateCcw size={20} />HP を全回復して再挑戦</div>}
-    <div className="demo-hud-bottom"><Health value={hp} /><span><Coins size={17} />120 pt <Shield size={17} /> 永続</span></div>
-    <div className="demo-caption">{retry ? '所持ポイント・永続バフは維持' : defeat ? '敗北したステージの最初に戻る' : collected ? '回復アイテムを回収すると HP 回復' : killed ? '回復アイテムを通常ポイントと別にドロップ' : '特定ステージ以降、一部の敵がランダムに発光'}</div>
+    {defeat && <div className="game-overlay"><div className="retry-popup"><RotateCcw size={32} /><h4>HP が 0 → 敗北</h4><p>ゲームの最初から再挑戦</p></div></div>}
+    {retry && <div className="stage-toast"><RotateCcw size={20} />HP を全回復して最初から</div>}
+    <div className="demo-hud-bottom"><Health value={hp} /></div>
+    <div className="demo-caption">{retry ? '途中の区切りはチェックポイントではない' : defeat ? '敗北すると最初から再挑戦' : collected ? '回復アイテムを回収すると HP 回復' : killed ? '特殊状態の敵から回復アイテムをドロップ' : '一定のタイミング以降、一部の敵がランダムに発光'}</div>
   </>
 }
 
@@ -115,17 +123,16 @@ export function BossDemo({ frame }: { frame: number }) {
   </>
 }
 
-const labels: Record<DemoMode, string> = { combat: '基本プレイ', enemies: '敵の攻撃パターン', progression: 'ポイントと強化', recovery: '回復と再挑戦', boss: '巻き戻しボス' }
+const labels: Record<DemoMode, string> = { combat: '基本プレイ', enemies: '敵の攻撃パターン', progression: '進行と敵構成', recovery: '回復と再挑戦', boss: '巻き戻しボス' }
 export function GameDemo({ mode, frame, reducedMotion = false }: { mode: DemoMode; frame: number; reducedMotion?: boolean }) {
   const f = reducedMotion ? 72 : frame % 360
   return <div className={`game-demo demo-${mode}`} role="img" aria-label={`${labels[mode]}のループ動作例`}>
     <div className="demo-grid" style={{ transform: `translateY(${reducedMotion ? 0 : f % 32}px)` }} />
     <div className="demo-topline"><span><Sparkles size={16} />{labels[mode]}</span><span>{reducedMotion ? '静止表示' : 'ループ再生'}<RotateCcw size={14} /></span></div>
-    <div className="demo-action" style={{ opacity: Math.min(1, f / 8, (360 - f) / 8) }}>{mode === 'boss' ? <BossDemo frame={f} /> : mode === 'enemies' ? <Enemies frame={f} /> : mode === 'recovery' ? <Recovery frame={f} /> : <Combat frame={f} progression={mode === 'progression'} />}</div>
+    <div className="demo-action" style={{ opacity: Math.min(1, f / 8, (360 - f) / 8) }}>{mode === 'boss' ? <BossDemo frame={f} /> : mode === 'enemies' ? <Enemies frame={f} /> : mode === 'recovery' ? <Recovery frame={f} /> : mode === 'progression' ? <Progression frame={f} /> : <Combat frame={f} />}</div>
   </div>
 }
 
 export function DemoFigure({ mode, frame, reducedMotion }: { mode: DemoMode; frame: number; reducedMotion: boolean }) {
   return <figure className="demo-figure"><div className="demo-viewport"><GameDemo mode={mode} frame={frame} reducedMotion={reducedMotion} /></div><figcaption>動作例。外観・数値・攻撃パターンは実装班が決定。</figcaption></figure>
 }
-
