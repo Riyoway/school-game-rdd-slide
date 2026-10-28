@@ -61,9 +61,18 @@ function Enemies({ frame }: { frame: number }) {
       const y = 55 + cycle * 1.55
       const x = enemy.x + (index === 3 ? Math.sin(f / 18) * 38 : 0)
       const alpha = Math.min(1, cycle / 18, (180 - cycle) / 20)
+      const firePeriod = index === 2 ? 42 : index === 1 ? 58 : 52
+      const shotAge = (f + enemy.phase * 2) % firePeriod
+      const shotAlpha = Math.min(1, shotAge / 4, (firePeriod - shotAge) / 10)
+      const shotSpeed = index === 2 ? 5.2 : 3.35
+      const shotY = y + 42 + shotAge * shotSpeed
       return <div key={enemy.name} style={{ opacity: alpha }}>
         <Sprite name={enemy.name} x={x} y={y} size={78} />
-        {index === 1 ? [-1, 0, 1].map(s => <Shot key={s} x={x + s * 24} y={y + 45} angle={s * -22} scale={.82} />) : <Shot x={x} y={y + 48} scale={index === 2 ? .72 : .88} />}
+        <div style={{ opacity: shotAlpha }}>
+          {index === 1
+            ? [-1, 0, 1].map(s => <Shot key={s} x={x + s * shotAge * .72} y={shotY} angle={s * -22} scale={.82} />)
+            : <Shot x={x} y={shotY} scale={index === 2 ? .72 : .88} />}
+        </div>
       </div>
     })}
     <Sprite name="player" x={320 + Math.sin(f / 26) * 42} y={392} size={82} />
