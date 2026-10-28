@@ -74,7 +74,7 @@ export default function Presentation() {
     { icon: <ArrowLeft />, label: '前のスライド', onClick: () => goTo(navigation.to - 1), className: navigation.to === 0 ? 'dock-disabled' : '' },
     { separator: true },
     { icon: paused ? <Play /> : <Pause />, label: paused ? 'デモを再生' : 'デモを一時停止', onClick: togglePlayback, active: !paused },
-    { icon: <FileText />, label: '発表メモ', onClick: () => setNotes(value => !value), active: notes, badge: notes ? true : undefined },
+    { icon: <FileText />, label: '発表メモ', onClick: () => setNotes(value => !value), active: notes },
     { icon: fullscreen ? <Minimize /> : <Expand />, label: fullscreen ? '全画面を終了' : '全画面表示', onClick: toggleFullscreen, active: fullscreen },
     { separator: true },
     { icon: <ArrowRight />, label: '次のスライド', onClick: () => goTo(navigation.to + 1), className: navigation.to === presentationSlides.length - 1 ? 'dock-disabled' : '' },
@@ -134,7 +134,8 @@ export default function Presentation() {
         bounce={!reducedMotion}
         tiles
         showLabels
-        showIndicators
+        showIndicators={false}
+        showBadges={false}
         accentColor="#8cb8ff"
         badgeColor="#7aa8ff"
       />
