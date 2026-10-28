@@ -1,5 +1,5 @@
-import { AbsoluteFill, Easing } from 'remotion'
-import { TransitionSeries, linearTiming, type TransitionPresentation, type TransitionPresentationComponentProps } from '@remotion/transitions'
+import { AbsoluteFill } from 'remotion'
+import { TransitionSeries, springTiming, type TransitionPresentation, type TransitionPresentationComponentProps } from '@remotion/transitions'
 import { SlideContent } from './SlideContent'
 import { HOLD_FRAMES, TRANSITION_FRAMES } from './content'
 
@@ -11,11 +11,11 @@ function PanelReveal({ children, presentationDirection, presentationProgress, pa
   if (passedProps.reducedMotion) return <AbsoluteFill style={{ opacity: entering ? p : 1 - p }}>{children}</AbsoluteFill>
   return <AbsoluteFill style={{
     overflow: 'hidden',
-    opacity: entering ? 1 : 1 - p * .75,
-    clipPath: entering ? `inset(0 ${direction > 0 ? (1 - p) * 100 : 0}% 0 ${direction < 0 ? (1 - p) * 100 : 0}% round ${(1 - p) * 20}px)` : undefined,
-    transform: entering ? `perspective(1800px) translateX(${direction * (1 - p) * 70}px) rotateY(${direction * (1 - p) * -3}deg)` : `perspective(1800px) translateX(${-direction * p * 95}px) rotateY(${direction * p * 2}deg)`,
-    filter: entering ? undefined : `blur(${p * 4}px)`,
-    transformOrigin: direction > 0 ? 'left center' : 'right center',
+    opacity: entering ? p : 1 - p,
+    transform: entering
+      ? `translate3d(${direction * (1 - p) * 26}px, 0, 0) scale(${0.992 + p * 0.008})`
+      : `translate3d(${-direction * p * 18}px, 0, 0) scale(${1 - p * 0.004})`,
+    willChange: 'transform, opacity',
   }}>{children}</AbsoluteFill>
 }
 
@@ -28,7 +28,7 @@ export function SlideTransition({ from, to, fromFrame, reducedMotion }: SlideTra
     <TransitionSeries.Sequence durationInFrames={frames}>
       <SlideContent index={from} reducedMotion={reducedMotion} fixedFrame={fromFrame} frameOffset={fromFrame} />
     </TransitionSeries.Sequence>
-    <TransitionSeries.Transition presentation={presentation} timing={linearTiming({ durationInFrames: frames, easing: Easing.bezier(.77, 0, .175, 1) })} />
+    <TransitionSeries.Transition presentation={presentation} timing={springTiming({ durationInFrames: frames, config: { damping: 200, stiffness: 180, mass: 0.8 } })} />
     <TransitionSeries.Sequence durationInFrames={HOLD_FRAMES}>
       <SlideContent index={to} reducedMotion={reducedMotion} />
     </TransitionSeries.Sequence>

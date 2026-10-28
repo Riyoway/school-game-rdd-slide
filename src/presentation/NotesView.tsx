@@ -49,7 +49,10 @@ export default function NotesView() {
       <p className="notes-kicker">SLIDE {String(index + 1).padStart(2, '0')}</p>
       <h1>{slide.title}</h1>
       <div className="notes-script">
-        {sentences.map((sentence, sentenceIndex) => <p key={`${index}-${sentenceIndex}`}>{sentence}。</p>)}
+        {sentences.map((sentence, sentenceIndex) => <div className="notes-line" key={`${index}-${sentenceIndex}`}>
+          <span aria-hidden="true">{String(sentenceIndex + 1).padStart(2, '0')}</span>
+          <p>{sentence}。</p>
+        </div>)}
       </div>
     </article>
 

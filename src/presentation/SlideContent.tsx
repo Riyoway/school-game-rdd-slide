@@ -1,4 +1,4 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion'
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
 import { ArrowRight, Check, CheckCheck, Code2, Cross, FileCode2, Gamepad2, Heart, Layers3, Monitor, RotateCcw, ShieldCheck, Sparkles, Swords, Target, Users } from 'lucide-react'
 import { FaGithub } from 'react-icons/fa6'
 import { SiCloudflare, SiMarkdown } from 'react-icons/si'
@@ -9,18 +9,29 @@ import { DemoFigure } from './GameDemo'
 import { slides } from './content'
 import type { ReactNode } from 'react'
 
-function Fact({ value, label }: { value: string; label: string }) {
-  return <SpotlightCard className="fact fact-card" theme="light" spotlightColor="#7aa2ff" intensity={0.08} spotlightSize={170} softness={0.9} borderGlow={0.35} proximity={45} smoothing={0.18} flare={false}><strong>{value}</strong><span>{label}</span></SpotlightCard>
+function Reveal({ children, delay = 0, reducedMotion = false, className = '' }: { children: ReactNode; delay?: number; reducedMotion?: boolean; className?: string }) {
+  const frame = useCurrentFrame()
+  const { fps } = useVideoConfig()
+  const prefersReducedMotion = reducedMotion || (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const progress = prefersReducedMotion ? 1 : spring({ frame: Math.max(0, frame - delay), fps, durationInFrames: 20, config: { damping: 200, stiffness: 180, mass: 0.75 } })
+  const opacity = interpolate(progress, [0, 1], [0, 1])
+  const translateY = interpolate(progress, [0, 1], [12, 0])
+  const scale = interpolate(progress, [0, 1], [0.992, 1])
+  return <div className={`motion-reveal ${className}`.trim()} style={{ opacity, transform: `translate3d(0, ${translateY}px, 0) scale(${scale})`, willChange: 'transform, opacity' }}>{children}</div>
 }
-function Rule({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
-  return <SpotlightCard className="rule-row rule-card" theme="light" spotlightColor="#7397ec" intensity={0.07} spotlightSize={220} softness={0.9} borderGlow={0.32} proximity={55} smoothing={0.18} flare={false}><div className="rule-icon">{icon}</div><div><h3>{title}</h3><p>{children}</p></div></SpotlightCard>
+
+function Fact({ value, label, delay, reducedMotion }: { value: string; label: string; delay: number; reducedMotion: boolean }) {
+  return <Reveal delay={delay} reducedMotion={reducedMotion} className="fact-reveal"><SpotlightCard className="fact fact-card" theme="light" spotlightColor="#111111" intensity={0.045} spotlightSize={160} softness={0.94} borderGlow={0.22} proximity={36} smoothing={0.16} flare={false}><strong>{value}</strong><span>{label}</span></SpotlightCard></Reveal>
 }
-function ServiceCard({ icon, title, eyebrow, children, accent }: { icon: ReactNode; title: string; eyebrow: string; children: ReactNode; accent: string }) {
-  return <SpotlightCard className="service-card" theme="light" spotlightColor={accent} intensity={0.18} spotlightSize={250} softness={0.82} borderGlow={0.72} proximity={70} smoothing={0.2} flare={false}>
+function Rule({ icon, title, children, delay = 5, reducedMotion = false }: { icon: ReactNode; title: string; children: ReactNode; delay?: number; reducedMotion?: boolean }) {
+  return <Reveal delay={delay} reducedMotion={reducedMotion} className="rule-reveal"><SpotlightCard className="rule-row rule-card" theme="light" spotlightColor="#111111" intensity={0.04} spotlightSize={200} softness={0.94} borderGlow={0.2} proximity={42} smoothing={0.16} flare={false}><div className="rule-icon">{icon}</div><div><h3>{title}</h3><p>{children}</p></div></SpotlightCard></Reveal>
+}
+function ServiceCard({ icon, title, eyebrow, children, accent, delay = 5, reducedMotion = false }: { icon: ReactNode; title: string; eyebrow: string; children: ReactNode; accent: string; delay?: number; reducedMotion?: boolean }) {
+  return <Reveal delay={delay} reducedMotion={reducedMotion} className="service-reveal"><SpotlightCard className="service-card" theme="light" spotlightColor={accent} intensity={0.07} spotlightSize={220} softness={0.9} borderGlow={0.28} proximity={48} smoothing={0.16} flare={false}>
     <div className="service-card-top"><div className="service-logo" style={{ color: accent }}>{icon}</div><span>{eyebrow}</span></div>
     <h3>{title}</h3>
     <div className="service-card-copy">{children}</div>
-  </SpotlightCard>
+  </SpotlightCard></Reveal>
 }
 
 export function SlideContent({ index, reducedMotion, frameOffset = 0, fixedFrame }: { index: number; reducedMotion: boolean; frameOffset?: number; fixedFrame?: number }) {
@@ -29,13 +40,13 @@ export function SlideContent({ index, reducedMotion, frameOffset = 0, fixedFrame
   const entrance = reducedMotion || fixedFrame !== undefined ? 1 : interpolate(localFrame, [0, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
   return <AbsoluteFill className={`spec-slide slide-page-${index}`}>
     <div className="slide-running-header"><span><FileCode2 size={21} />ソフトウェア工学 / ゲーム要求定義</span><span>{String(index + 1).padStart(2, '0')}<i />{String(slides.length).padStart(2, '0')}</span></div>
-    <div className="slide-content" style={{ opacity: entrance, transform: `translateY(${(1 - entrance) * 14}px)`, filter: `blur(${(1 - entrance) * 3}px)` }}>
+    <div className="slide-content" style={{ opacity: entrance, transform: `translate3d(0, ${(1 - entrance) * 8}px, 0)` }}>
       {index === 0 ? <>
-        <div className="intro-layout"><section className="intro-text"><div className="section-label">ゲームの概要</div><h1>2Dシューティング<br />ゲームの要求定義</h1><p className="intro-description">敵構成が変わる区間を連続して進み、<br />時間を巻き戻す最終ボスを倒す。</p><div className="facts"><Fact value="1" label="ステージ" /><Fact value="4種類以上" label="通常敵" /><Fact value="3" label="初期 HP" /></div></section><div className="demo-shell"><DemoFigure mode="combat" frame={frame} reducedMotion={reducedMotion} /></div></div>
+        <div className="intro-layout"><section className="intro-text"><div className="section-label">ゲームの概要</div><h1>2Dシューティング<br />ゲームの要求定義</h1><p className="intro-description">敵構成が変わる区間を連続して進み、<br />時間を巻き戻す最終ボスを倒す。</p><div className="facts"><Fact value="1" label="ステージ" delay={4} reducedMotion={reducedMotion} /><Fact value="4種類以上" label="通常敵" delay={8} reducedMotion={reducedMotion} /><Fact value="3" label="初期 HP" delay={12} reducedMotion={reducedMotion} /></div></section><div className="demo-shell"><DemoFigure mode="combat" frame={frame} reducedMotion={reducedMotion} /></div></div>
         <div className="intro-bottom"><span><Users size={23} />他班が開発するための要求を説明</span><span>発表 約5分 / 質疑応答 3分</span></div>
       </> : <>
         <header className="slide-title"><div className="section-label">{['', 'ゲームの基本', '進行構成', '回復と再挑戦', '最終ボス', '開発と公開', 'まとめ'][index]}</div><h2>{slides[index].title}</h2></header>
-        {index === 1 && <><div className="split-layout"><section className="spec-copy"><Rule icon={<Gamepad2 />} title="移動しながら敵を攻撃する">被弾で HP が減り、0 になると敗北。<br />被弾直後は短時間の無敵時間を設ける。</Rule><Rule icon={<Target />} title="通常敵は4種類以上">発射方向・弾数・弾速・発射間隔・移動方法などで違いをつける。</Rule><Rule icon={<Layers3 />} title="進行に合わせて難しくする">後半になるにつれて敵の数・耐久力・弾速などを調整する。</Rule></section><div className="demo-shell"><DemoFigure mode="enemies" frame={frame} reducedMotion={reducedMotion} /></div></div><div className="slide-callout"><Swords size={23} /><span>開始から最終ボスまで、1つのステージとして連続して進行する。</span></div></>}
+        {index === 1 && <><div className="split-layout"><section className="spec-copy"><Rule icon={<Gamepad2 />} title="移動しながら敵を攻撃する" delay={4} reducedMotion={reducedMotion}>被弾で HP が減り、0 になると敗北。<br />被弾直後は短時間の無敵時間を設ける。</Rule><Rule icon={<Target />} title="通常敵は4種類以上" delay={8} reducedMotion={reducedMotion}>発射方向・弾数・弾速・発射間隔・移動方法などで違いをつける。</Rule><Rule icon={<Layers3 />} title="進行に合わせて難しくする" delay={12} reducedMotion={reducedMotion}>後半になるにつれて敵の数・耐久力・弾速などを調整する。</Rule></section><div className="demo-shell"><DemoFigure mode="enemies" frame={frame} reducedMotion={reducedMotion} /></div></div><div className="slide-callout"><Swords size={23} /><span>開始から最終ボスまで、1つのステージとして連続して進行する。</span></div></>}
         {index === 2 && <><div className="split-layout"><section className="spec-copy progression-copy"><div className="point-flow"><div><Gamepad2 /><span>開始</span></div><ArrowRight /><div><Layers3 /><span>敵構成が変化</span></div><ArrowRight /><div><Swords /><span>最終ボス</span></div></div><p className="flow-description">途中に複数の区切りを設け、<br />区切りごとに出現する敵を変える。</p><Separator /><Rule icon={<Check />} title="区切りは別ステージではない">区切りで進行を止めず、そのまま連続して進む。</Rule><Rule icon={<Target />} title="敵の種類・組み合わせ・数を変える">同じ敵だけが続かないよう、進行に応じて出現内容を切り替える。</Rule></section><div className="demo-shell"><DemoFigure mode="progression" frame={frame} reducedMotion={reducedMotion} /></div></div><div className="slide-callout"><Layers3 size={23} /><span>区切りは進行上の目安であり、チェックポイントではない。</span></div></>}
         {index === 3 && <><div className="split-layout"><section className="spec-copy"><Rule icon={<Cross />} title="光る敵を倒して回復する">進行中の一定のタイミング以降、一部の敵がランダムに発光。倒すと回復アイテムを落とす。</Rule><p className="recovery-note"><Heart size={22} />回収すると HP を回復できる。</p><Separator /><div className="retry-heading"><RotateCcw /><h3>敗北したらゲームの最初から再挑戦</h3></div><div className="retention-table"><div><span>HP</span><strong>全回復</strong></div><div><span>再開地点</span><strong>最初から</strong></div></div></section><div className="demo-shell"><DemoFigure mode="recovery" frame={frame} reducedMotion={reducedMotion} /></div></div><div className="slide-callout"><ShieldCheck size={23} /><span>途中の区切りから再開する機能は必須ではない。</span></div></>}
         {index === 4 && <><div className="split-layout boss-split"><section className="spec-copy boss-steps"><div><span className="step-index">1</span><div><h3>必要な状態を記録する</h3><small>Snapshot</small><p>位置・攻撃状態などを一定時間記録。<br />ゲーム全体の完全保存は不要。</p></div></div><div><span className="step-index">2</span><div><h3>数秒前の状態に戻す</h3><small>State Rollback</small><p>巻き戻し中だと視覚的に伝える。</p></div></div><div><span className="step-index">3</span><div><h3>攻撃を変えて再実行する</h3><small>Re-simulation</small><p>前回の回避先を参考に攻撃を変える。<br />例：右に避けたら、次は右を狙う。</p></div></div></section><div className="demo-shell"><DemoFigure mode="boss" frame={frame} reducedMotion={reducedMotion} /></div></div><div className="boss-requirement"><span><CheckCheck size={24} />通常攻撃も2種類以上</span><p>変更可能：発射方向・位置・タイミング・弾速・弾数</p></div></>}
