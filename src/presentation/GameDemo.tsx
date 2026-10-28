@@ -107,9 +107,11 @@ function Recovery({ frame }: { frame: number }) {
   const retry = f >= 274
   const playerY = retry ? 392 : lerp(392, 332, smooth((f - 132) / 46))
   const hp = retry ? 3 : defeatP > .55 ? 0 : f >= 216 ? 1 : collected ? 2 : 1
+  const enemyX = 320 + Math.sin(f / 18) * 24
+  const glow = .5 + Math.sin(f / 8) * .5
   return <>
     <Field frame={f} speed={1.1} />
-    {!killed && <><div className="enemy-glow" style={{ left: 320, top: 132, opacity: .45 + Math.sin(f / 9) * .18 }} /><Sprite name="enemy-move" x={320 + Math.sin(f / 18) * 24} y={132} size={82} /></>}
+    {!killed && <Sprite name="enemy-move" x={enemyX} y={132} size={82} style={{ filter: `brightness(${1.18 + glow * .42}) saturate(${1.08 + glow * .3}) drop-shadow(0 0 ${5 + glow * 7}px rgba(101, 235, 178, ${.34 + glow * .26})) drop-shadow(0 0 ${11 + glow * 10}px rgba(101, 235, 178, ${.12 + glow * .14}))` }} />}
     <Sprite name="player" x={320} y={playerY} size={84} opacity={defeatP > .7 ? 0 : 1} style={{ filter: f >= 212 && f < 230 && Math.floor(f / 3) % 2 ? 'brightness(2)' : undefined }} />
     {!killed && <Shot color="player" x={320} y={354 - (f % 64) * 4.2} scale={.88} />}
     {killed && !collected && <div className="pickup pickup-health" style={{ left: 320, top: lerp(140, 326, smooth((f - 92) / 84)) }}><Cross size={17} /></div>}
