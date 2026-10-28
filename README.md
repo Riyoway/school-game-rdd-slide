@@ -29,7 +29,8 @@ npm run build
 ## Deployment
 
 - Host: Cloudflare Workers & Pages
-- Domain: `slide.temp.riyo.me`
+- Presentation: `https://slide.temp.riyo.me`
+- Mobile speaker notes: `https://slide.temp.riyo.me/notes`
 - Build command: `npm run build`
 - Output directory: `dist`
 
