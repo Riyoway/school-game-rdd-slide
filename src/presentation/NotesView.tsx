@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Clock3, ExternalLink, FileText } from 'lucide-react'
-import { slides, TOTAL_SECONDS } from './content'
+import { presentationSlides, TOTAL_SECONDS } from './content'
 import './notes.css'
 
-const clampIndex = (value: number) => Math.max(0, Math.min(slides.length - 1, value))
+const clampIndex = (value: number) => Math.max(0, Math.min(presentationSlides.length - 1, value))
 
 const indexFromHash = () => {
   const parsed = Number.parseInt(window.location.hash.replace('#', ''), 10)
@@ -12,7 +12,7 @@ const indexFromHash = () => {
 
 export default function NotesView() {
   const [index, setIndex] = useState(indexFromHash)
-  const slide = slides[index]
+  const slide = presentationSlides[index]
   const sentences = useMemo(
     () => slide.notes.split('。').map(sentence => sentence.trim()).filter(Boolean),
     [slide.notes],
@@ -37,9 +37,9 @@ export default function NotesView() {
         <div className="notes-brand"><FileText size={18} /><span>発表メモ</span></div>
         <a className="notes-open-slide" href="/" target="_blank" rel="noreferrer">スライド<ExternalLink size={14} /></a>
       </div>
-      <div className="notes-progress" aria-hidden="true"><i style={{ width: `${((index + 1) / slides.length) * 100}%` }} /></div>
+      <div className="notes-progress" aria-hidden="true"><i style={{ width: `${((index + 1) / presentationSlides.length) * 100}%` }} /></div>
       <div className="notes-meta">
-        <span>{String(index + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}</span>
+        <span>{String(index + 1).padStart(2, '0')} / {String(presentationSlides.length).padStart(2, '0')}</span>
         <span><Clock3 size={15} />このページ 約{slide.seconds}秒</span>
         <span>全体 {Math.floor(TOTAL_SECONDS / 60)}分{TOTAL_SECONDS % 60}秒</span>
       </div>
@@ -57,7 +57,7 @@ export default function NotesView() {
     </article>
 
     <nav className="notes-jump" aria-label="スライド一覧">
-      {slides.map((item, itemIndex) => <button
+      {presentationSlides.map((item, itemIndex) => <button
         key={item.title}
         type="button"
         className={itemIndex === index ? 'active' : ''}
@@ -69,8 +69,8 @@ export default function NotesView() {
     <div className="notes-bottom-space" />
     <nav className="notes-controls" aria-label="発表メモ操作">
       <button type="button" onClick={() => goTo(index - 1)} disabled={index === 0}><ArrowLeft size={20} /><span>前へ</span></button>
-      <strong>{index + 1} / {slides.length}</strong>
-      <button type="button" onClick={() => goTo(index + 1)} disabled={index === slides.length - 1}><span>次へ</span><ArrowRight size={20} /></button>
+      <strong>{index + 1} / {presentationSlides.length}</strong>
+      <button type="button" onClick={() => goTo(index + 1)} disabled={index === presentationSlides.length - 1}><span>次へ</span><ArrowRight size={20} /></button>
     </nav>
   </main>
 }

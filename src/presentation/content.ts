@@ -5,10 +5,13 @@ export const slides = [
   { title: '回復と敗北時の処理', seconds: 35, notes: '進行中の一定のタイミング以降、一部の敵がランダムに光るようになります。この敵を倒すと回復アイテムを落とし、回収するとHPが回復します。敗北した場合はHPを全回復し、進んでいた位置に関係なくゲームの最初から再挑戦します。' },
   { title: '最終ボスの時間巻き戻し', seconds: 70, notes: 'このゲームの特徴が、最終ボスの時間巻き戻しです。まずSnapshotで位置や攻撃状態など必要な情報だけを一定時間記録します。次にState Rollbackで数秒前に戻します。最後にRe-simulationで、巻き戻し前の回避を参考に攻撃を変えます。例えば右に避けた場合、巻き戻し後は右方向を狙うように攻撃を変えます。通常攻撃も2種類以上用意します。' },
   { title: '開発・公開条件', seconds: 40, notes: 'PC向けのWebアプリとして、ChromeやEdgeなどでログインせず遊べるようにします。ソースコードはGitHubのPublic Repositoryで管理し、全員がContributorとして確認できる状態にします。ライセンスはMITです。Cloudflare Workers & Pagesで第三者がプレイできる状態にします。AIの利用は可能ですが、機密情報を入力せず、外部素材やコードの利用条件を確認します。' },
-  { title: '必須要件と実装班の裁量', seconds: 25, notes: '必須なのは、画面が上へ進み続ける1ステージ構成、4種類以上の通常敵、HP3、進行位置に応じた敵構成の変化、回復、最初からの再挑戦、そして時間巻き戻しボスです。言語やフレームワーク、見た目、操作キー、敵構成が変わるタイミングや配置、ボスの通常攻撃や演出は実装班で決められます。' },
+  { title: '必須の要望とお任せする部分', seconds: 25, notes: 'こちらから必ずお願いしたいのは、画面が上へ進み続ける1ステージ構成、4種類以上の通常敵、HP3、進行に応じた敵構成の変化、回復、敗北したら最初から再挑戦すること、そして時間巻き戻しボスです。世界観やキャラクターの見た目、操作感、敵の配置、回復量、ボスの細かな攻撃や演出などは、遊びやすい形でお任せします。' },
 ] as const
 
-export const TOTAL_SECONDS = slides.reduce((sum, slide) => sum + slide.seconds, 0)
+export const PRESENTATION_ORDER = [0, 1, 2, 3, 4, 6] as const
+export const presentationSlides = PRESENTATION_ORDER.map(sourceIndex => ({ ...slides[sourceIndex], sourceIndex }))
+
+export const TOTAL_SECONDS = presentationSlides.reduce((sum, slide) => sum + slide.seconds, 0)
 export const FRAME_RATE = 30
 export const DEMO_FRAMES = 360
 export const TRANSITION_FRAMES = 24

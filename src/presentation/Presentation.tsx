@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import Dock, { type DockItemData } from '@/components/Dock'
 import AnimatedContent from '@/components/AnimatedContent'
 import { SlideTransition } from './SlideTransition'
-import { FRAME_RATE, HOLD_FRAMES, slides, TOTAL_SECONDS } from './content'
+import { FRAME_RATE, HOLD_FRAMES, presentationSlides, TOTAL_SECONDS } from './content'
 import './presentation.css'
 
 export default function Presentation() {
@@ -20,7 +20,7 @@ export default function Presentation() {
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
   const goTo = useCallback((index: number) => {
-    const next = Math.max(0, Math.min(slides.length - 1, index))
+    const next = Math.max(0, Math.min(presentationSlides.length - 1, index))
     const from = currentRef.current
     if (next === from) return
     const fromFrame = playerRef.current?.getCurrentFrame() ?? 0
@@ -54,7 +54,7 @@ export default function Presentation() {
         event.preventDefault()
         if (!event.repeat) goTo(currentRef.current + (event.key === 'ArrowRight' ? 1 : -1))
       }
-      if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); goTo(event.key === 'Home' ? 0 : slides.length - 1) }
+      if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); goTo(event.key === 'Home' ? 0 : presentationSlides.length - 1) }
       if (event.code === 'Space') { event.preventDefault(); if (!event.repeat) togglePlayback() }
     }
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -77,7 +77,7 @@ export default function Presentation() {
     { icon: <FileText />, label: '発表メモ', onClick: () => setNotes(value => !value), active: notes, badge: notes ? true : undefined },
     { icon: fullscreen ? <Minimize /> : <Expand />, label: fullscreen ? '全画面を終了' : '全画面表示', onClick: toggleFullscreen, active: fullscreen },
     { separator: true },
-    { icon: <ArrowRight />, label: '次のスライド', onClick: () => goTo(navigation.to + 1), className: navigation.to === slides.length - 1 ? 'dock-disabled' : '' },
+    { icon: <ArrowRight />, label: '次のスライド', onClick: () => goTo(navigation.to + 1), className: navigation.to === presentationSlides.length - 1 ? 'dock-disabled' : '' },
   ]
 
   return <main className="presentation-app presentation-lux" ref={rootRef}>
@@ -91,7 +91,7 @@ export default function Presentation() {
     <div className="presentation-workspace">
       <div className="presentation-stage-shell">
         <div className="stage-edge" aria-hidden="true" />
-        <div className="presentation-stage" aria-label={`${navigation.to + 1}枚目：${slides[navigation.to].title}`}>
+        <div className="presentation-stage" aria-label={`${navigation.to + 1}枚目：${presentationSlides[navigation.to].title}`}>
           <Player
             key={navigation.revision}
             ref={playerRef}
@@ -116,8 +116,8 @@ export default function Presentation() {
     </div>
 
     <div className="presentation-meta glass-pill">
-      <strong>{String(navigation.to + 1).padStart(2, '0')}</strong><span>/ {String(slides.length).padStart(2, '0')}</span><i />
-      <span className="meta-title">{slides[navigation.to].title}</span>
+      <strong>{String(navigation.to + 1).padStart(2, '0')}</strong><span>/ {String(presentationSlides.length).padStart(2, '0')}</span><i />
+      <span className="meta-title">{presentationSlides[navigation.to].title}</span>
     </div>
 
     <div className="presentation-dock-shell">
@@ -141,8 +141,8 @@ export default function Presentation() {
     </div>
 
     {notes && <AnimatedContent key={navigation.to} trigger="mount" distance={12} duration={.3} blur={3} className="speaker-notes glass-notes" id="speaker-notes">
-      <div><FileText size={18} /><strong>発表メモ</strong><Badge variant="outline">目安 {slides[navigation.to].seconds}秒</Badge></div>
-      <p>{slides[navigation.to].notes}</p>
+      <div><FileText size={18} /><strong>発表メモ</strong><Badge variant="outline">目安 {presentationSlides[navigation.to].seconds}秒</Badge></div>
+      <p>{presentationSlides[navigation.to].notes}</p>
     </AnimatedContent>}
     {fullscreenError && <p className="fullscreen-error" role="status">{fullscreenError}</p>}
   </main>

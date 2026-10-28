@@ -1,7 +1,7 @@
 import { AbsoluteFill } from 'remotion'
 import { TransitionSeries, springTiming, type TransitionPresentation, type TransitionPresentationComponentProps } from '@remotion/transitions'
 import { SlideContent } from './SlideContent'
-import { HOLD_FRAMES, TRANSITION_FRAMES } from './content'
+import { HOLD_FRAMES, PRESENTATION_ORDER, TRANSITION_FRAMES } from './content'
 
 type PanelProps = { direction: number; reducedMotion: boolean }
 function PanelReveal({ children, presentationDirection, presentationProgress, passedProps }: TransitionPresentationComponentProps<PanelProps>) {
@@ -21,16 +21,19 @@ function PanelReveal({ children, presentationDirection, presentationProgress, pa
 
 export type SlideTransitionProps = { from: number; to: number; fromFrame: number; reducedMotion: boolean }
 export function SlideTransition({ from, to, fromFrame, reducedMotion }: SlideTransitionProps) {
-  if (from === to) return <SlideContent index={to} reducedMotion={reducedMotion} />
+  const fromIndex = PRESENTATION_ORDER[from] ?? PRESENTATION_ORDER[0]
+  const toIndex = PRESENTATION_ORDER[to] ?? PRESENTATION_ORDER[0]
+  const displayCount = PRESENTATION_ORDER.length
+  if (from === to) return <SlideContent index={toIndex} displayIndex={to} displayCount={displayCount} reducedMotion={reducedMotion} />
   const presentation: TransitionPresentation<PanelProps> = { component: PanelReveal, props: { direction: to > from ? 1 : -1, reducedMotion } }
   const frames = reducedMotion ? 8 : TRANSITION_FRAMES
   return <TransitionSeries>
     <TransitionSeries.Sequence durationInFrames={frames}>
-      <SlideContent index={from} reducedMotion={reducedMotion} fixedFrame={fromFrame} frameOffset={fromFrame} />
+      <SlideContent index={fromIndex} displayIndex={from} displayCount={displayCount} reducedMotion={reducedMotion} fixedFrame={fromFrame} frameOffset={fromFrame} />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={presentation} timing={springTiming({ durationInFrames: frames, config: { damping: 200, stiffness: 180, mass: 0.8 } })} />
     <TransitionSeries.Sequence durationInFrames={HOLD_FRAMES}>
-      <SlideContent index={to} reducedMotion={reducedMotion} />
+      <SlideContent index={toIndex} displayIndex={to} displayCount={displayCount} reducedMotion={reducedMotion} />
     </TransitionSeries.Sequence>
   </TransitionSeries>
 }
