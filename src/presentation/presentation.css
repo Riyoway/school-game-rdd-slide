@@ -90,3 +90,32 @@
 
 .progression-copy .buff-row p { line-height: 1.6; }
 .boss-health { left: 27px; top: 95px; width: 100px; }
+
+/* React Bits presentation chrome */
+.presentation-lux { position: relative; height: 100dvh; min-height: 100dvh; overflow: hidden; padding: 14px 24px 10px; background: radial-gradient(circle at 50% -18%, #30486f 0%, #172238 31%, #0b101a 68%, #070a10 100%); color: #eef4ff; isolation: isolate; }
+.presentation-lux:before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: -3; opacity: .36; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 44px 44px; mask-image: linear-gradient(to bottom, #000 0%, transparent 82%); }
+.ambient { position: absolute; width: 480px; height: 480px; border-radius: 50%; pointer-events: none; z-index: -2; filter: blur(95px); opacity: .17; }
+.ambient-a { left: -160px; top: 12%; background: #5b8dff; animation: ambient-drift-a 12s ease-in-out infinite alternate; }
+.ambient-b { right: -180px; bottom: 4%; background: #7d5cff; animation: ambient-drift-b 15s ease-in-out infinite alternate; }
+@keyframes ambient-drift-a { to { transform: translate(95px, 48px) scale(1.12); } }
+@keyframes ambient-drift-b { to { transform: translate(-80px, -40px) scale(.92); } }
+.glass-bar { position: relative; z-index: 20; width: min(100%, 1660px); height: 48px; padding: 0 17px; margin: 0 auto 8px; border: 1px solid rgba(255,255,255,.09); border-radius: 16px; color: #e9f0fb; background: linear-gradient(180deg, rgba(255,255,255,.095), rgba(255,255,255,.045)); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 16px 45px rgba(0,0,0,.18); backdrop-filter: blur(22px) saturate(1.35); }
+.glass-bar .presentation-duration { color: #9eadc4; }
+.glass-bar [data-slot="badge"] { border-color: rgba(255,255,255,.08); background: rgba(255,255,255,.08); color: #dce8fb; }
+.presentation-lux .presentation-workspace { width: 100%; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 2px 0 4px; }
+.presentation-stage-shell { position: relative; width: min(96vw, calc((100dvh - 190px) * 16 / 9)); aspect-ratio: 16 / 9; flex-shrink: 0; padding: 1px; border-radius: 19px; background: linear-gradient(145deg, rgba(255,255,255,.34), rgba(255,255,255,.06) 42%, rgba(126,166,255,.26) 100%); box-shadow: 0 34px 90px rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.22); }
+.stage-edge { position: absolute; inset: -5px; z-index: -1; border-radius: 23px; opacity: .48; filter: blur(14px); background: conic-gradient(from 80deg, transparent 0 18%, rgba(102,156,255,.55) 27%, transparent 38% 67%, rgba(170,119,255,.43) 78%, transparent 90%); animation: stage-edge-spin 12s linear infinite; }
+@keyframes stage-edge-spin { to { transform: rotate(360deg); } }
+.presentation-lux .presentation-stage { position: relative; z-index: 2; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 18px; overflow: hidden; background: #fff; box-shadow: none; }
+.glass-pill { flex: none; height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 14px; margin: 2px auto 2px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(20,28,43,.58); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.18); backdrop-filter: blur(18px) saturate(1.4); color: #dbe6f7; font-size: 12px; font-variant-numeric: tabular-nums; }
+.glass-pill strong { color: #fff; font-size: 13px; } .glass-pill > span:first-of-type { color: #71819b; }
+.glass-pill i { width: 1px; height: 13px; margin: 0 6px; background: rgba(255,255,255,.12); }
+.glass-pill .meta-title { color: #aebbd0; max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.presentation-dock-shell { position: relative; flex: none; width: 470px; height: 76px; margin: 0 auto; z-index: 30; }
+.presentation-dock-shell svg { width: 20px; height: 20px; }
+.presentation-dock-shell .dock-disabled { opacity: .34; }
+.glass-notes { position: fixed; z-index: 60; right: 24px; bottom: 100px; width: min(540px, calc(100vw - 48px)); margin: 0; padding: 18px 20px; color: #e9eff9; border: 1px solid rgba(255,255,255,.1); background: rgba(18,25,38,.78); box-shadow: 0 24px 60px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter: blur(24px) saturate(1.35); }
+.glass-notes > div { color: #f4f7fc; } .glass-notes p { color: #b9c5d8; font-size: 14px; line-height: 1.75; }
+.presentation-lux .fullscreen-error { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); z-index: 70; color: #ffd7d0; background: rgba(110,35,30,.8); border: 1px solid rgba(255,180,170,.2); border-radius: 999px; padding: 8px 14px; backdrop-filter: blur(16px); }
+@media (max-width: 760px) { .presentation-lux { padding: 8px 8px 6px; } .glass-bar { height: 42px; margin-bottom: 5px; } .presentation-stage-shell { width: 100%; } .presentation-dock-shell { width: min(430px, 96vw); height: 72px; } .glass-pill .meta-title { max-width: 200px; } .glass-notes { right: 10px; bottom: 88px; width: calc(100vw - 20px); } }
+@media (prefers-reduced-motion: reduce) { .ambient, .stage-edge { animation: none !important; } }
