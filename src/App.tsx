@@ -1,6 +1,10 @@
 import NotesView from './presentation/NotesView'
 import Presentation from './presentation/Presentation'
+import RequirementsView from './requirements/RequirementsView'
 
 export default function App() {
-  return window.location.pathname.replace(/\/+$/, '') === '/notes' ? <NotesView /> : <Presentation />
+  const path = window.location.pathname.replace(/\/+$/, '')
+  if (path === '/notes') return <NotesView />
+  if (path === '/requirements') return <RequirementsView />
+  return <Presentation />
 }
