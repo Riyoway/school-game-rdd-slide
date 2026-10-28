@@ -316,3 +316,18 @@
 .summary-end { margin-top: 12px; padding: 13px 16px; border-radius: 9px; border-color: #e5e5e5; background: #fafafa; font-size: 18px; color: #404040; }
 .motion-reveal { transform-origin: center bottom; }
 @media (prefers-reduced-motion: reduce) { .motion-reveal { transform: none !important; opacity: 1 !important; } }
+
+/* Make the requested grid visibly present without dominating content */
+.presentation-lux {
+  background-color: #fafafa;
+  background-image: linear-gradient(rgba(23,23,23,.065) 1px, transparent 1px), linear-gradient(90deg, rgba(23,23,23,.065) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.spec-slide { background: #fff; }
+.spec-slide:before {
+  display: block;
+  background-color: transparent;
+  background-image: linear-gradient(rgba(23,23,23,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(23,23,23,.055) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 1;
+}
